@@ -1,37 +1,102 @@
-## Welcome to GitHub Pages
+## title: 让人掉头发的数字
+---
+title: 让人掉头发的数字
+date: 2021-03-12 10:53:35
+tags:
+---
 
-You can use the [editor on GitHub](https://github.com/lucia110/blog/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+### 小数相加
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Q: 
+0.1 + 0.3 = ？
+0.1 + 0.2 = ？
 
-### Markdown
+浮点数的存储方式： 64位 
+1 符号位S 
+11 指数位E （补码表示）
+52 尾数M
+插入图片
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+科学计数法的二进制表示
+// 乘二取整，进位取零，逆序排列
+举例：0.5 用二进制表示 0.1，0.25用哪个二进制表示 0.01
+0.25 * 2 = 0.5
+0.5 * 2 = 1
 
-```markdown
-Syntax highlighted code block
+JS计算：9007199254740993 - 990 // 9007199254740002
+为什么 0.1+0.2=0.30000000000000004？
+计算步骤为：
 
-# Header 1
-## Header 2
-### Header 3
+// 0.1 和 0.2 都转化成二进制后再进行运算
+0.1 * 2 = 0.2
+0.2 * 2 = 0.4
+0.4 * 2 = 0.8
+0.8 * 2 = 1.6
+0.6 * 2 = 1.2
+0.2 * 2 = 0.4
+0.4 * 2 = 0.8
+0.8 * 2 = 1.6
+0.6 * 2 = 1.2
 
-- Bulleted
-- List
+0.00011001100110011001100110011001100110011001100110011010 +
+0.0011001100110011001100110011001100110011001100110011010 =
+0.0100110011001100110011001100110011001100110011001100111
+= 1 * (1/2)(-2) + 1 * (1/2)(-5) + 1 * (1/2)(-6)  +  1 * (1/2)(-2)  
 
-1. Numbered
-2. List
+// 转成十进制正好是 0.30000000000000004
 
-**Bold** and _Italic_ and `Code` text
+### 最小误差范围
+// Number.EPSILON 可以用来设置“能够接受的误差范围”
+Number.EPSILON // 2.220446049250313e-16
+Number.EPSILON === Math.pow(2,-52) // true
+ES6 在Number对象上面，新增一个极小的常量Number.EPSILON。根据规格，它表示 1 与大于 1 的最小浮点数之间的差。
 
-[Link](url) and ![Image](src)
-```
+对于 64 位浮点数来说，大于 1 的最小浮点数相当于二进制的1.00..001，小数点后面有连续 51 个零。这个值减去 1 之后，就等于 2 的 -52 次方。
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-### Jekyll Themes
+### 安全数字
+JavaScript 里最大的安全的整数为什么是2的53次方减一？
+JavaScript 能够准确表示的整数范围在-2^53到2^53之间（不含两个端点），超过这个范围，无法精确表示这个值
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/lucia110/blog/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+Javascript的Number数字类型
+64-bit的浮点数
 
-### Support or Contact
+// 最大安全数
+Number.MAX_SAFE_INTEGER = Math.pow(2,53) - 1
+// 最小安全数
+Number.MIN_SAFE_INTEGER  = Math.pow(2,53) +1
+// 判断安全数
+Number.isSafeInteger(Number.MIN_SAFE_INTEGER - 1) // false
+Number.isSafeInteger(Number.MIN_SAFE_INTEGER) // true
+Number.isSafeInteger(Number.MAX_SAFE_INTEGER) // true
+Number.isSafeInteger(Number.MAX_SAFE_INTEGER + 1) // false
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+// 如何解决误差
+大数字计算转字符串处理
+小数字计算呢？
+
+toPrecision vs toFixed
+数据处理时，这两个函数很容易混淆。它们的共同点是把数字转成字符串供展示使用。注意在计算的中间过程不要使用，只用于最终结果。
+
+不同点就需要注意一下：
+
+toPrecision 是处理精度，精度是从左至右第一个不为0的数开始数起。
+toFixed 是小数点后指定位数取整，从小数点开始数起。
+
+0.0121012312.toFixed(); // "0"
+0.0121012312.toPrecision() // "0.0121012312"
+
+1.25.toFixed(1) // 1.4 正确
+1.335.toFixed(2) // 1.33  错误
+1.3335.toFixed(3) // 1.333 错误
+1.33335.toFixed(4) // 1.3334 正确
+1.333335.toFixed(5)  // 1.33333 错误
+1.3333335.toFixed(6) // 1.333333 错误
+
+重写
+Number.prototype.toFixed = function(len) {
+
+}
+
+
+
